@@ -1,4 +1,7 @@
 from datetime import datetime, date
+import locale
+
+locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 
 
 def get_air_travel_settings():
@@ -29,8 +32,12 @@ def validate_input_string(input: str):
     return input
 
 
-def format_input_date(input: str):
-    return input.replace(" ", "/")
+def format_input_date(date_object: str):
+    return {
+        "dia": str(date_object.day),
+        "mes": str(date_object.strftime("%B")),
+        "ano": str(date_object.year),
+    }
 
 
 def validate_input_date(input: str):
@@ -42,4 +49,4 @@ def validate_input_date(input: str):
         )
     if isinstance(date_convertted, date) == False:
         raise ValueError("Por favor, insira uma data válida!")
-    return format_input_date(input)
+    return format_input_date(date_convertted)
