@@ -1,1 +1,1 @@
-from get_air_travel_settings import get_air_travel_settings
+from .extract_flight_informations import WebRobot
