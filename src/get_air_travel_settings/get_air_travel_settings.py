@@ -7,10 +7,10 @@ locale.setlocale(locale.LC_TIME, "pt_BR.utf8")
 def get_air_travel_settings():
     while True:
         try:
-            destination_from_where = validate_input_string(
+            destination_from_where = validate_input_place(
                 input("Insira o local de onde voce vai sair: ")
             )
-            destination_from_to = validate_input_string(
+            destination_from_to = validate_input_place(
                 input("Insira o local para onde voce vai")
             )
             departure_date = validate_input_date(input("Insira a data de ida desejada"))
@@ -26,13 +26,13 @@ def get_air_travel_settings():
             print(error)
 
 
-def validate_input_string(input: str):
+def validate_input_place(input: str):
     if input.replace(" ", "").isalpha() == False:
         raise ValueError("Por favor, insira um local válido!")
     return input
 
 
-def format_input_date(date_object: str):
+def format_date_in_dict(date_object: str):
     return {
         "dia": str(date_object.day),
         "mes": str(date_object.strftime("%B")),
@@ -49,4 +49,4 @@ def validate_input_date(input: str):
         )
     if isinstance(date_convertted, date) == False:
         raise ValueError("Por favor, insira uma data válida!")
-    return format_input_date(date_convertted)
+    return format_date_in_dict(date_convertted)

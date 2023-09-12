@@ -1,4 +1,4 @@
 from .utils_functions import (
-    is_month_chosen_is_posteior_to_second_shown_on_screen,
-    is_chosen_month_is_previous_first_shown_on_screen,
+    is_month_earlier_than_the_first_one_shown_on_the_screen,
+    is_month_later_than_the_second_one_shown_on_the_screen,
 )
