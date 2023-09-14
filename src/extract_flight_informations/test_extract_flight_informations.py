@@ -1,7 +1,23 @@
 import pytest
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from extract_flight_informations import WebRobot
+from utils import format_date, get_today_date, get_date_after_a_week_from_today
+
+
+def generate_mock_air_travel_settings():
+    from_where = "São Paulo"
+    to_where = "Rio de Janeiro"
+    departure_date = format_date(get_today_date(), "%d %B %Y").split(" ")
+    return_date = format_date(get_date_after_a_week_from_today(), "%d %B %Y").split(" ")
+    print(departure_date, return_date)
+    return [
+        from_where,
+        to_where,
+        {"dia": departure_date[0], "mes": departure_date[1], "ano": departure_date[2]},
+        {"dia": return_date[0], "mes": return_date[1], "ano": return_date[2]},
+    ]
 
 
 @pytest.fixture
@@ -29,25 +45,20 @@ def test_access_the_skyscanner_site(web_robot: WebRobot):
 
 @pytest.mark.web_process
 def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
-    mock_air_travel_settings = [
-        "São Paulo",
-        "Rio de Janeiro",
-        {"dia": "15", "mes": "setembro", "ano": "2023"},
-        {"dia": "18", "mes": "setembro", "ano": "2023"},
-    ]
+    mock_air_travel_settings = generate_mock_air_travel_settings()
 
     web_robot.access_skyscanner_site()
     web_robot.insert_air_travel_settings(mock_air_travel_settings)
 
     assert (
-        "15/9"
+        f'{format_date(get_today_date(), "%d/%-m")}'
         in web_robot.web_driver.find_element(
             By.CSS_SELECTOR,
             'span[aria-label="Seleção da data de início no calendário"] span:nth-child(2)',
         ).text
     )
     assert (
-        "18/9"
+        f'{format_date(get_date_after_a_week_from_today(), "%d/%-m")}'
         in web_robot.web_driver.find_element(
             By.CSS_SELECTOR,
             'span[aria-label="Seleção da data de término no calendário"] span:nth-child(2)',
