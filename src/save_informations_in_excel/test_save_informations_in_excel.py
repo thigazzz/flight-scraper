@@ -1,8 +1,10 @@
 import os
-import pytest
 from typing import Dict
 from openpyxl import load_workbook, Workbook
-import time
+import pytest
+from faker import Faker
+
+fake = Faker()
 
 
 class ExcelRobot:
@@ -53,35 +55,22 @@ def excel_open_and_delete():
     os.remove(os.path.abspath("data/air-travels.xlsx"))
 
 
+def make_mock_extracted_informations():
+    mock_extracted_informations = []
+    for _ in list(range(5)):
+        mock_extracted_informations.append(
+            {
+                "price": fake.pricetag(),
+                "departure time": fake.date(),
+                "disembarkation time": fake.date(),
+            },
+        )
+    return mock_extracted_informations
+
+
 @pytest.mark.excel_process
 def test_insert_extracted_informations_in_excel_file(excel_open_and_delete):
-    mock_extracted_informations = [
-        {
-            "price": "R$ 100,00",
-            "departure time": "07/10/2023",
-            "disembarkation time": "14/10/2023",
-        },
-        {
-            "price": "R$ 150,00",
-            "departure time": "07/10/2023",
-            "disembarkation time": "14/10/2023",
-        },
-        {
-            "price": "R$ 100,00",
-            "departure time": "07/10/2023",
-            "disembarkation time": "14/10/2023",
-        },
-        {
-            "price": "R$ 200,00",
-            "departure time": "07/10/2023",
-            "disembarkation time": "14/10/2023",
-        },
-        {
-            "price": "R$ 1200,00",
-            "departure time": "07/10/2023",
-            "disembarkation time": "14/10/2023",
-        },
-    ]
+    mock_extracted_informations = make_mock_extracted_informations()
 
     excel_robot = ExcelRobot()
     excel_robot.insert_informations_in_excel(mock_extracted_informations)
