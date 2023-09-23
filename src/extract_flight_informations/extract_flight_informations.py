@@ -2,10 +2,11 @@ from typing import List
 from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.webdriver import WebDriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import utils
 import pyautogui
 import time
-import os
 
 
 class WebRobot:
@@ -56,18 +57,47 @@ class WebRobot:
 
     def insert_air_travel_settings(self, air_travel_settings: list):
         from_where, to_where, departure_date, return_date = air_travel_settings
+        wait = WebDriverWait(self.web_driver, timeout=5)
+        time.sleep(60)
 
         self.web_driver.find_element(
             By.CSS_SELECTOR, "input[aria-label='Campo de origem']"
         ).send_keys(from_where)
-        time.sleep(3)
-        pyautogui.press("down")
+        wait.until(
+            lambda d: EC.element_to_be_selected(
+                self.web_driver.find_element(
+                    By.CSS_SELECTOR, 'div[role="presentation"][tabindex="-1"]'
+                )
+            )
+        )
+        wait.until(
+            lambda d: EC.element_to_be_selected(
+                self.web_driver.find_element(
+                    By.CSS_SELECTOR,
+                    f'ul[role="listbox"] li[role="option"][aria-label*="{from_where}"]',
+                )
+            )
+        )
         pyautogui.press("enter")
+
         self.web_driver.find_element(
             By.CSS_SELECTOR, "input[placeholder='Destino']"
         ).send_keys(to_where)
-        time.sleep(3)
-        pyautogui.press("down")
+        wait.until(
+            lambda d: EC.element_to_be_selected(
+                self.web_driver.find_element(
+                    By.CSS_SELECTOR, 'div[role="presentation"][tabindex="-1"]'
+                )
+            )
+        )
+        wait.until(
+            lambda d: EC.element_to_be_selected(
+                self.web_driver.find_element(
+                    By.CSS_SELECTOR,
+                    f'ul[role="listbox"] li[role="option"][aria-label*="{to_where}"]',
+                )
+            )
+        )
         pyautogui.press("enter")
 
         self.web_driver.find_element(
