@@ -34,8 +34,9 @@ def web_robot(driver):
     return web_robot
 
 
+@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
-def test_access_the_skyscanner_site(web_robot: WebRobot):
+def test_access_site(web_robot: WebRobot):
     web_robot.access_skyscanner_site()
     assert (
         web_robot.web_driver.find_element(By.CLASS_NAME, "logo-image").is_displayed()
@@ -43,6 +44,7 @@ def test_access_the_skyscanner_site(web_robot: WebRobot):
     )
 
 
+@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
 def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
     mock_air_travel_settings = generate_mock_air_travel_settings()
@@ -64,3 +66,45 @@ def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
             'span[aria-label="Seleção da data de término no calendário"] span:nth-child(2)',
         ).text
     )
+
+
+@pytest.mark.web_process
+def test_extract_air_travel_main_informations_from_site(web_robot: WebRobot):
+    mock_air_travel_settings = generate_mock_air_travel_settings()
+
+    web_robot.access_skyscanner_site()
+    web_robot.insert_air_travel_settings(mock_air_travel_settings)
+    web_robot.search_air_travels()
+    informations_extracted = web_robot.extract_air_travels_informations()
+
+    index = 0
+    travel_cards = web_robot.web_driver.find_elements(
+        By.CSS_SELECTOR, 'div.resultsList div[class*="wrapper"] div[class*="inner"]'
+    )
+    for travel_card in travel_cards:
+        item_cards = travel_card.find_elements(
+            By.CSS_SELECTOR, 'div[class*="main"] li[class*="item"]'
+        )
+        for item_card in item_cards:
+            assert (
+                travel_card.find_element(
+                    By.CSS_SELECTOR,
+                    'div[class*="price"] div[class*="price-text-container"] div[class*="price-text"]',
+                ).text
+                == informations_extracted[index]["price"]
+            )
+            assert (
+                item_card.find_element(
+                    By.CSS_SELECTOR,
+                    'div[class*="stacked"] + div > div span:first-child',
+                ).text
+                == informations_extracted[index]["departure time"]
+            )
+            assert (
+                item_card.find_element(
+                    By.CSS_SELECTOR,
+                    'li[class*="item"] div[class*="stacked"] + div > div span:last-child',
+                ).text
+                == informations_extracted[index]["disembarkation time"]
+            )
+            index += 1

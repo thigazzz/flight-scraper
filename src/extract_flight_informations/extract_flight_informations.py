@@ -3,6 +3,9 @@ from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.webdriver import WebDriver
 import utils
+import pyautogui
+import time
+import os
 
 
 class WebRobot:
@@ -12,15 +15,60 @@ class WebRobot:
     def access_skyscanner_site(self):
         self.web_driver.get("https://www.kayak.com.br/")
 
+    def search_air_travels(self):
+        self.web_driver.find_element(
+            By.CSS_SELECTOR, 'button[aria-label="Buscar"]'
+        ).click()
+
+    def extract_air_travels_informations(self):
+        time.sleep(10)
+        self.web_driver.switch_to.window(self.web_driver.window_handles[1])
+
+        informations = []
+        travel_cards = self.web_driver.find_elements(
+            By.CSS_SELECTOR, 'div.resultsList div[class*="wrapper"] div[class*="inner"]'
+        )
+        for travel_card in travel_cards:
+            price = travel_card.find_element(
+                By.CSS_SELECTOR,
+                'div[class*="price"] div[class*="price-text-container"] div[class*="price-text"]',
+            ).text
+            item_cards = travel_card.find_elements(
+                By.CSS_SELECTOR, 'div[class*="main"] li[class*="item"]'
+            )
+            for item_card in item_cards:
+                departure_time = item_card.find_element(
+                    By.CSS_SELECTOR,
+                    'div[class*="stacked"] + div > div span:first-child',
+                ).text
+                disembarkation_time = item_card.find_element(
+                    By.CSS_SELECTOR,
+                    'li[class*="item"] div[class*="stacked"] + div > div span:last-child',
+                ).text
+                informations.append(
+                    {
+                        "price": price,
+                        "departure time": departure_time,
+                        "disembarkation time": disembarkation_time,
+                    }
+                )
+        return informations
+
     def insert_air_travel_settings(self, air_travel_settings: list):
         from_where, to_where, departure_date, return_date = air_travel_settings
 
         self.web_driver.find_element(
             By.CSS_SELECTOR, "input[aria-label='Campo de origem']"
         ).send_keys(from_where)
+        time.sleep(3)
+        pyautogui.press("down")
+        pyautogui.press("enter")
         self.web_driver.find_element(
             By.CSS_SELECTOR, "input[placeholder='Destino']"
         ).send_keys(to_where)
+        time.sleep(3)
+        pyautogui.press("down")
+        pyautogui.press("enter")
 
         self.web_driver.find_element(
             By.CSS_SELECTOR,
