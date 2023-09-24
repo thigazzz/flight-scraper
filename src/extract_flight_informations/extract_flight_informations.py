@@ -9,20 +9,41 @@ import pyautogui
 import time
 
 
-class WebRobot:
-    def __init__(self, driver: WebDriver):
+class Robot:
+    def __init__(self, driver: WebDriver, timeout: int = 5):
         self.web_driver = driver
+        self.wait = WebDriverWait(self.web_driver, timeout=5)
+
+    def access_site(self, url: str):
+        self.web_driver.get(url)
+
+    def find_element(self, selector: str, by: str = "CSS_SELECTOR"):
+        by_type = getattr(By, by.upper())
+        return self.web_driver.find_element(by_type, selector)
+
+    def click_element(self, selector: str, by: str = "CSS_SELECTOR") -> None:
+        self.find_element(selector=selector, by=by).click()
+
+    def get_text(self, selector: str, by: str = "CSS_SELECTOR") -> str:
+        return self.find_element(selector=selector, by=by).text
+
+    def wait_element(self, waiter: str, selector: str, by: str = "CSS_SELECTOR"):
+        waiter = getattr(EC, waiter)
+        self.wait.until(lambda d: waiter(self.find_element(selector=selector, by=by)))
+
+
+class WebRobot(Robot):
+    def __init__(self, driver: WebDriver):
+        super().__init__(driver)
 
     def access_skyscanner_site(self):
-        self.web_driver.get("https://www.kayak.com.br/")
+        self.access_site("https://www.kayak.com.br/")
 
     def search_air_travels(self):
-        self.web_driver.find_element(
-            By.CSS_SELECTOR, 'button[aria-label="Buscar"]'
-        ).click()
+        self.click_element('button[aria-label="Buscar"]')
 
     def extract_air_travels_informations(self):
-        time.sleep(10)
+        time.sleep(15)
         self.web_driver.switch_to.window(self.web_driver.window_handles[1])
 
         informations = []
@@ -57,60 +78,30 @@ class WebRobot:
 
     def insert_air_travel_settings(self, air_travel_settings: list):
         from_where, to_where, departure_date, return_date = air_travel_settings
-        wait = WebDriverWait(self.web_driver, timeout=5)
-        time.sleep(60)
 
-        self.web_driver.find_element(
-            By.CSS_SELECTOR, "input[aria-label='Campo de origem']"
-        ).send_keys(from_where)
-        wait.until(
-            lambda d: EC.element_to_be_selected(
-                self.web_driver.find_element(
-                    By.CSS_SELECTOR, 'div[role="presentation"][tabindex="-1"]'
-                )
-            )
-        )
-        wait.until(
-            lambda d: EC.element_to_be_selected(
-                self.web_driver.find_element(
-                    By.CSS_SELECTOR,
-                    f'ul[role="listbox"] li[role="option"][aria-label*="{from_where}"]',
-                )
-            )
-        )
-        pyautogui.press("enter")
+        self.insert_destination(from_where, "input[aria-label='Campo de origem']")
+        self.insert_destination(to_where, "input[placeholder='Destino']")
 
-        self.web_driver.find_element(
-            By.CSS_SELECTOR, "input[placeholder='Destino']"
-        ).send_keys(to_where)
-        wait.until(
-            lambda d: EC.element_to_be_selected(
-                self.web_driver.find_element(
-                    By.CSS_SELECTOR, 'div[role="presentation"][tabindex="-1"]'
-                )
-            )
-        )
-        wait.until(
-            lambda d: EC.element_to_be_selected(
-                self.web_driver.find_element(
-                    By.CSS_SELECTOR,
-                    f'ul[role="listbox"] li[role="option"][aria-label*="{to_where}"]',
-                )
-            )
-        )
-        pyautogui.press("enter")
-
-        self.web_driver.find_element(
-            By.CSS_SELECTOR,
-            "span[aria-label='Seleção da data de início no calendário']",
-        ).click()
+        self.click_element("span[aria-label='Seleção da data de início no calendário']")
         self.insert_date(departure_date)
-
-        self.web_driver.find_element(
-            By.CSS_SELECTOR,
-            "span[aria-label='Seleção da data de término no calendário']",
-        ).click()
+        self.click_element(
+            "span[aria-label='Seleção da data de término no calendário']"
+        )
         self.insert_date(return_date)
+
+    def insert_destination(self, destination: str, selector: str):
+        self.web_driver.find_element(By.CSS_SELECTOR, selector).send_keys(destination)
+        self.wait_destination_dropbox_appears(destination)
+        pyautogui.press("enter")
+
+    def wait_destination_dropbox_appears(self, destination: str):
+        self.wait_element(
+            "element_to_be_selected", 'div[role="presentation"][tabindex="-1"]'
+        )
+        self.wait_element(
+            "element_to_be_selected",
+            f'ul[role="listbox"] li[role="option"][aria-label*="{destination}"]',
+        )
 
     def insert_date(self, date: dict):
         while True:
@@ -125,10 +116,9 @@ class WebRobot:
             if self.is_defined_month_displayed_on_screen(
                 month, displayed_months_on_screen
             ):
-                self.web_driver.find_element(
-                    By.CSS_SELECTOR,
-                    f"div[aria-label*='{date['dia']} de {date['mes']} de {date['ano']}']",
-                ).click()
+                self.click_element(
+                    f"div[aria-label*='{date['dia']} de {date['mes']} de {date['ano']}']"
+                )
                 break
 
     def get_months_displayed_on_screen(self):
@@ -155,11 +145,7 @@ class WebRobot:
         return True
 
     def back_months_displayed_on_screen(self):
-        self.web_driver.find_element(
-            By.CSS_SELECTOR, 'button[aria-label="Mês anterior"]'
-        ).click()
+        self.click_element('button[aria-label="Mês anterior"]')
 
     def advance_months_displayed_on_screen(self):
-        self.web_driver.find_element(
-            By.CSS_SELECTOR, 'button[aria-label="Próximo mês"]'
-        ).click()
+        self.click_element('button[aria-label="Próximo mês"]')
