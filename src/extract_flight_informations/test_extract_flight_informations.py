@@ -2,15 +2,17 @@ import pytest
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from extract_flight_informations import WebRobot
+from extract_flight_informations import WebRobot, Robot
 from utils import format_date, get_today_date, get_date_after_a_week_from_today
 
 
 def generate_mock_air_travel_settings():
     from_where = "São Paulo"
     to_where = "Rio de Janeiro"
-    departure_date = format_date(get_today_date(), "%d %B %Y").split(" ")
-    return_date = format_date(get_date_after_a_week_from_today(), "%d %B %Y").split(" ")
+    departure_date = format_date(get_today_date(), "%-d %B %Y").split(" ")
+    return_date = format_date(get_date_after_a_week_from_today(), "%-d %B %Y").split(
+        " "
+    )
     print(departure_date, return_date)
     return [
         from_where,
@@ -34,7 +36,6 @@ def web_robot(driver):
     return web_robot
 
 
-@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
 def test_access_site(web_robot: WebRobot):
     web_robot.access_skyscanner_site()
@@ -52,14 +53,14 @@ def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
     web_robot.insert_air_travel_settings(mock_air_travel_settings)
 
     assert (
-        f'{format_date(get_today_date(), "%d/%-m")}'
+        f'{format_date(get_today_date(), "%-d/%-m")}'
         in web_robot.web_driver.find_element(
             By.CSS_SELECTOR,
             'span[aria-label="Seleção da data de início no calendário"] span:nth-child(2)',
         ).text
     )
     assert (
-        f'{format_date(get_date_after_a_week_from_today(), "%d/%-m")}'
+        f'{format_date(get_date_after_a_week_from_today(), "%-d/%-m")}'
         in web_robot.web_driver.find_element(
             By.CSS_SELECTOR,
             'span[aria-label="Seleção da data de término no calendário"] span:nth-child(2)',
@@ -67,7 +68,6 @@ def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
     )
 
 
-@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
 def test_extract_air_travel_main_informations_from_site(web_robot: WebRobot):
     mock_air_travel_settings = generate_mock_air_travel_settings()
