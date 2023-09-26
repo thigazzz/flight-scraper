@@ -10,9 +10,9 @@ import time
 
 
 class Robot:
-    def __init__(self, driver: WebDriver, timeout: int = 5):
+    def __init__(self, driver: WebDriver, timeout: int = 20):
         self.web_driver = driver
-        self.wait = WebDriverWait(self.web_driver, timeout=5)
+        self.wait = WebDriverWait(self.web_driver, timeout=timeout)
 
     def access_site(self, url: str):
         self.web_driver.get(url)
@@ -31,6 +31,13 @@ class Robot:
         waiter = getattr(EC, waiter)
         self.wait.until(lambda d: waiter(self.find_element(selector=selector, by=by)))
 
+    def switch_tab(self):
+        self.__wait_tab()
+        self.web_driver.switch_to.window(self.web_driver.window_handles[1])
+
+    def __wait_tab(self):
+        self.wait.until(lambda d: len(self.web_driver.window_handles) > 1)
+
 
 class WebRobot(Robot):
     def __init__(self, driver: WebDriver):
@@ -42,9 +49,15 @@ class WebRobot(Robot):
     def search_air_travels(self):
         self.click_element('button[aria-label="Buscar"]')
 
+    def wait_test(self):
+        a = "O KAYAK Mix oferece passagens aéreas de ida e volta por diferentes companhias aéreas e estas estão sujeitas aos termos e condições de cada companhia. As alterações feitas em uma passagem não garantem modificações na outra passagem. As tarifas mudam com frequência e estão sujeitas à disponibilidade. Em viagens internacionais, pode ser necessário o comprovante da viagem de volta."
+        locator = (By.CSS_SELECTOR, "div[class*='disclaimer-text']:last-child")
+        self.wait.until(EC.text_to_be_present_in_element(locator, a))
+        print("esperou")
+
     def extract_air_travels_informations(self):
-        time.sleep(15)
-        self.web_driver.switch_to.window(self.web_driver.window_handles[1])
+        self.switch_tab()
+        self.wait_test()
 
         informations = []
         travel_cards = self.web_driver.find_elements(
