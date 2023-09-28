@@ -36,7 +36,6 @@ def web_robot(driver):
     return web_robot
 
 
-@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
 def test_access_site(web_robot: WebRobot):
     web_robot.access_skyscanner_site()
@@ -46,7 +45,6 @@ def test_access_site(web_robot: WebRobot):
     )
 
 
-@pytest.mark.skip(reason="a")
 @pytest.mark.web_process
 def test_insert_user_air_travel_settings_in_search_inputs(web_robot: WebRobot):
     mock_air_travel_settings = generate_mock_air_travel_settings()
